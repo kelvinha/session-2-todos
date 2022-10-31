@@ -19,32 +19,49 @@ func main() {
 
 // struct
 type People struct {
-	ID   int
-	Name string
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name"`
 }
 
 var people *[]People
 
 func Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	if len(*people) == 0 {
-		people = nil
+	result := map[string]interface{}{
+		"status":  http.StatusOK,
+		"data":    people,
+		"message": nil,
 	}
-	json.NewEncoder(w).Encode(people)
+
+	json.NewEncoder(w).Encode(result)
 }
 
 func PostData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	// define var
 	var (
-		todoPost People
-		save     []People
+		todoPost      People
+		save, getData []People
 	)
-
 	json.NewDecoder(r.Body).Decode(&todoPost)
-	save = append(save, todoPost)
-	people = &save
-	w.Write([]byte("data berhasil di post"))
+	if people == nil {
+		todoPost.ID = 1
+		save = append(save, todoPost)
+		people = &save
+	} else {
+		getData = *people
+		todoPost.ID += 1
+		getData = append(getData, todoPost)
+		people = &getData
+	}
+
+	result := map[string]interface{}{
+		"status":  http.StatusOK,
+		"data":    nil,
+		"message": "data berhasil di post",
+	}
+
+	json.NewEncoder(w).Encode(result)
 }
 
 func DeleteData(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +70,16 @@ func DeleteData(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	id, _ := strconv.Atoi(query.Get("id"))
 
+	if people == nil {
+		result := map[string]interface{}{
+			"status":  http.StatusNotFound,
+			"data":    nil,
+			"message": "id not found",
+		}
+		json.NewEncoder(w).Encode(result)
+		return
+	}
+
 	var dataPeople []People
 	dataPeople = *people
 
@@ -60,7 +87,12 @@ func DeleteData(w http.ResponseWriter, r *http.Request) {
 		if data.ID == id {
 			dataPeople = append(dataPeople[:index], dataPeople[index+1:]...)
 			people = &dataPeople
-			w.Write([]byte("data berhasil dihapus"))
+			result := map[string]interface{}{
+				"status":  http.StatusOK,
+				"data":    nil,
+				"message": "data berhasil di hapus",
+			}
+			json.NewEncoder(w).Encode(result)
 		}
 	}
 
@@ -72,6 +104,16 @@ func UpdateData(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	id, _ := strconv.Atoi(query.Get("id"))
 
+	if people == nil {
+		result := map[string]interface{}{
+			"status":  http.StatusNotFound,
+			"data":    nil,
+			"message": "id not found",
+		}
+		json.NewEncoder(w).Encode(result)
+		return
+	}
+
 	var dataPeople []People
 	dataPeople = *people
 
@@ -80,10 +122,12 @@ func UpdateData(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&peoplePost)
 	for index, data := range dataPeople {
 		if data.ID == id {
-			dataPeople = append(dataPeople[:index], dataPeople[index+1:]...)
-			dataPeople = append(dataPeople, peoplePost)
+			dataPeople[index].Name = peoplePost.Name
 			people = &dataPeople
+		} else {
+			http.Error(w, "Error", http.StatusBadRequest)
+			return
 		}
 	}
-	w.Write([]byte("data berhasil di update"))
+	json.NewEncoder(w).Encode("data berhasil di update")
 }
