@@ -1,0 +1,79 @@
+definitions:
+  main.People:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: kelpin h
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /delete-data:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: DELETE DATA PEOPLE
+      tags:
+      - TODOS
+  /get-data:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses: {}
+      summary: GET DATA PEOPLE
+      tags:
+      - TODOS
+  /post-data:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: payload
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/main.People'
+      produces:
+      - application/json
+      responses: {}
+      summary: POST DATA PEOPLE
+      tags:
+      - TODOS
+  /update-data:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: payload
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/main.People'
+      produces:
+      - application/json
+      responses: {}
+      summary: UPDATE DATA PEOPLE
+      tags:
+      - TODOS
+swagger: "2.0"
